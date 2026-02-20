@@ -1,65 +1,139 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import { fetchGuideData } from './actions';
+
+// 탭 목록 정의
+const TABS = [
+  { id: '엔진조립', name: '엔진 조립' },
+  { id: '차체조립', name: '차체 조립' },
+  { id: '엔진장착/기어/하부조립', name: '하부 조립' }
+];
+
+interface GuideStep {
+  step: string;
+  partName: string;
+  screwSize: string;
+  screwCount: string;
+  note1: string; // 설명 1 (비고1)
+  note2: string; // 설명 2 (비고2)
+}
+
+export default function CarAssemblyGuide() {
+  const [activeTab, setActiveTab] = useState(TABS[0].id);
+  const [steps, setSteps] = useState<GuideStep[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchGuideData(activeTab);
+        setSteps(data);
+        setCurrentIndex(0); // 탭 바뀔 때 인덱스 초기화
+      } catch (err) {
+        console.error('데이터 로드 실패:', err);
+        setError('데이터를 불러오는데 실패했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [activeTab]); // activeTab이 바뀔 때마다 다시 호출
+
+  const currentStep = steps[currentIndex];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-950 text-white font-sans">
+      <div className="w-full max-w-lg p-6 bg-gray-900 rounded-3xl shadow-2xl border border-gray-800">
+        
+        {/* 상단 탭 선택기 */}
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
+                activeTab === tab.id 
+                ? 'bg-blue-600 text-white font-bold' 
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              }`}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              {tab.name}
+            </button>
+          ))}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+
+        {loading ? (
+          <div className="py-20 text-center animate-pulse">데이터를 가져오는 중...</div>
+        ) : error ? (
+            <div className="py-20 text-center text-red-500">{error}</div>
+        ) : (
+          <>
+            <div className="mb-4 flex justify-between items-center text-sm font-mono text-blue-500">
+              <span>{activeTab}</span>
+              <span>{currentIndex + 1} / {steps.length > 0 ? steps.length : '-'}</span>
+            </div>
+            
+            <h1 className="text-2xl font-bold mb-8 min-h-[4rem] flex flex-col justify-center leading-tight">
+                <span className="text-sm text-gray-400 font-normal mb-1">STEP {currentStep ? currentStep.step : '-'}</span>
+                {currentStep ? currentStep.partName : '데이터가 없습니다.'}
+            </h1>
+            
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
+                <span className="block text-xs text-gray-500 uppercase mb-1">나사 크기</span>
+                <span className="text-xl font-bold text-yellow-500">{currentStep?.screwSize || '-'}</span>
+              </div>
+              <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
+                <span className="block text-xs text-gray-500 uppercase mb-1">나사 개수</span>
+                <span className="text-xl font-bold text-blue-400">{currentStep?.screwCount || '-'}</span>
+              </div>
+            </div>
+
+            {/* 설명 섹션 (Note 1 & Note 2) */}
+            <div className="space-y-3 mb-10">
+                {/* Note 1: 주요 설명 */}
+                <div className="bg-gray-800/30 p-4 rounded-xl border border-gray-700/50">
+                    <span className="block text-xs text-blue-400 uppercase mb-2 font-bold">📌 설명 및 팁</span>
+                    <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">
+                        {currentStep?.note1 || '추가 설명이 없습니다.'}
+                    </p>
+                </div>
+
+                {/* Note 2: 추가 정보 (있는 경우에만 표시하거나 강조) */}
+                {currentStep?.note2 && (
+                    <div className="bg-yellow-900/20 p-4 rounded-xl border border-yellow-700/30">
+                        <span className="block text-xs text-yellow-500 uppercase mb-2 font-bold">⚠️ 추가 참고사항</span>
+                        <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">
+                            {currentStep.note2}
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
+                disabled={currentIndex === 0 || steps.length === 0}
+                className="flex-1 py-4 bg-gray-800 hover:bg-gray-700 disabled:opacity-20 rounded-2xl transition-all font-semibold"
+              >
+                이전
+              </button>
+              <button 
+                onClick={() => setCurrentIndex(prev => Math.min(steps.length - 1, prev + 1))}
+                disabled={currentIndex === steps.length - 1 || steps.length === 0}
+                className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-20 rounded-2xl transition-all font-bold shadow-lg shadow-blue-900/20"
+              >
+                다음 공정
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </main>
   );
 }
