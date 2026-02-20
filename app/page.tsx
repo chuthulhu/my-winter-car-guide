@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { fetchGuideData } from './actions';
+import { GuideStep } from './types';
 
 // 탭 목록 정의
 const TABS = [
@@ -10,14 +11,7 @@ const TABS = [
   { id: '엔진장착/기어/하부조립', name: '하부 조립' }
 ];
 
-interface GuideStep {
-  step: string;
-  partName: string;
-  screwSize: string;
-  screwCount: string;
-  note1: string; // 설명 1 (비고1)
-  note2: string; // 설명 2 (비고2)
-}
+
 
 export default function CarAssemblyGuide() {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
