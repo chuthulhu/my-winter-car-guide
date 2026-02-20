@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { fetchGuideData } from './actions';
 import { GuideStep } from './types';
 
 // 탭 목록 정의
@@ -11,7 +10,56 @@ const TABS = [
   { id: '엔진장착/기어/하부조립', name: '하부 조립' }
 ];
 
+// Google Visualization API Response Interfaces
+interface GvizCell {
+  v: string | number | null;
+  f?: string;
+}
 
+interface GvizRow {
+  c: (GvizCell | null)[];
+}
+
+interface GvizTable {
+  cols: { id: string; label: string; type: string }[];
+  rows: GvizRow[];
+}
+
+interface GvizResponse {
+  version: string;
+  status: string;
+  table: GvizTable;
+}
+
+async function fetchGuideData(tabName: string): Promise<GuideStep[]> {
+  const url = `https://docs.google.com/spreadsheets/d/1Y695S7q8HfNluMx3SPY33WFt_yd76XUZM9F7MNnDYg4/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}`;
+
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch data: ${res.status} ${res.statusText}`);
+  }
+
+  const text = await res.text();
+  const jsonString = text.substring(47).slice(0, -2);
+
+  const data: GvizResponse = JSON.parse(jsonString);
+  const rows = data.table.rows;
+
+  return rows.map((row: GvizRow) => {
+    const c = row.c;
+    if (!c) return null;
+
+    return {
+      step: c[0]?.f || c[0]?.v?.toString() || '',
+      partName: c[1]?.v?.toString() || '',
+      screwSize: c[2]?.f || c[2]?.v?.toString() || '-',
+      screwCount: c[3]?.v?.toString() || '-',
+      note1: c[5]?.v?.toString() || '',
+      note2: c[6]?.v?.toString() || '',
+    };
+  }).filter((step): step is GuideStep => step !== null && step.step !== '');
+}
 
 export default function CarAssemblyGuide() {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
@@ -27,7 +75,7 @@ export default function CarAssemblyGuide() {
       try {
         const data = await fetchGuideData(activeTab);
         setSteps(data);
-        setCurrentIndex(0); // 탭 바뀔 때 인덱스 초기화
+        setCurrentIndex(0);
       } catch (err) {
         console.error('데이터 로드 실패:', err);
         setError('데이터를 불러오는데 실패했습니다.');
@@ -36,7 +84,7 @@ export default function CarAssemblyGuide() {
       }
     }
     loadData();
-  }, [activeTab]); // activeTab이 바뀔 때마다 다시 호출
+  }, [activeTab]);
 
   const currentStep = steps[currentIndex];
 
@@ -98,7 +146,7 @@ export default function CarAssemblyGuide() {
                     </p>
                 </div>
 
-                {/* Note 2: 추가 정보 (있는 경우에만 표시하거나 강조) */}
+                {/* Note 2: 추가 정보 (있는 경우에만 표시) */}
                 {currentStep?.note2 && (
                     <div className="bg-yellow-900/20 p-4 rounded-xl border border-yellow-700/30">
                         <span className="block text-xs text-yellow-500 uppercase mb-2 font-bold">⚠️ 추가 참고사항</span>
