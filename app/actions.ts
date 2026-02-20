@@ -1,5 +1,7 @@
 'use server';
 
+export const runtime = 'edge';
+
 interface GuideStep {
   step: string;
   partName: string;
