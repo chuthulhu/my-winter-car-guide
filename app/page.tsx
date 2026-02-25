@@ -113,7 +113,7 @@ export default function CarAssemblyGuide() {
         </div>
 
         {loading ? (
-          <div className="py-20 text-center text-accent animate-pulse">데이터를 가져오는 중...</div>
+          <div className="py-20 text-center text-text-secondary animate-pulse">데이터를 가져오는 중...</div>
         ) : error ? (
           <div className="py-20 text-center">
             <p className="text-error mb-4">{error}</p>
