@@ -59,7 +59,12 @@ function parseScrews(sizeRaw: string, countRaw: string): ScrewInfo[] {
  *   2) f에 "IMAGE(\"url\")" 형태의 수식 텍스트
  *   3) v가 null이고 f에만 값이 있는 경우
  *
- * 이 함수는 모든 경우를 처리하여 순수 URL을 반환합니다.
+ * Google Drive 공유 링크도 자동 변환합니다:
+ *   - drive.google.com/file/d/FILE_ID/...
+ *   - drive.google.com/open?id=FILE_ID
+ *   - drive.google.com/uc?id=FILE_ID&...
+ *   - drive.google.com/thumbnail?id=FILE_ID&...
+ *   → https://lh3.googleusercontent.com/d/FILE_ID
  */
 function parseImageUrl(cell: GvizCell | null | undefined): string {
   if (!cell) return '';
@@ -68,24 +73,63 @@ function parseImageUrl(cell: GvizCell | null | undefined): string {
   const raw = cell.v?.toString() || cell.f?.toString() || '';
   if (!raw) return '';
 
-  // 이미 http(s):// URL이면 그대로 반환
+  let url = '';
+
+  // 이미 http(s):// URL이면 추출
   if (/^https?:\/\//i.test(raw)) {
-    return raw;
+    url = raw;
+  } else {
+    // IMAGE("url") 또는 IMAGE("url", ...) 형태에서 URL 추출
+    const imageMatch = raw.match(/IMAGE\s*\(\s*"([^"]+)"/i);
+    if (imageMatch) {
+      url = imageMatch[1];
+    } else {
+      // 그 외 문자열에서 http(s) URL 패턴 추출 시도
+      const urlMatch = raw.match(/(https?:\/\/[^\s"')\]]+)/i);
+      if (urlMatch) {
+        url = urlMatch[1];
+      }
+    }
   }
 
-  // IMAGE("url") 또는 IMAGE("url", ...) 형태에서 URL 추출
-  const imageMatch = raw.match(/IMAGE\s*\(\s*"([^"]+)"/i);
-  if (imageMatch) {
-    return imageMatch[1];
+  if (!url) return '';
+
+  // Google Drive URL → 직접 이미지 URL 변환
+  return convertGoogleDriveUrl(url);
+}
+
+/**
+ * Google Drive 공유/직통 링크를 직접 이미지 표시가 가능한 URL로 변환합니다.
+ * 이미 직접 표시 가능하거나 Google Drive가 아닌 URL은 그대로 반환합니다.
+ */
+function convertGoogleDriveUrl(url: string): string {
+  // 이미 lh3.googleusercontent.com이면 그대로 반환
+  if (url.includes('lh3.googleusercontent.com')) {
+    return url;
   }
 
-  // 그 외 문자열에서 http(s) URL 패턴 추출 시도
-  const urlMatch = raw.match(/(https?:\/\/[^\s"')\]]+)/i);
-  if (urlMatch) {
-    return urlMatch[1];
+  let fileId = '';
+
+  // drive.google.com/file/d/FILE_ID/... 형태
+  const fileMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileMatch) {
+    fileId = fileMatch[1];
   }
 
-  return '';
+  // drive.google.com/open?id=FILE_ID 또는 uc?id=FILE_ID 또는 thumbnail?id=FILE_ID 형태
+  if (!fileId) {
+    const idMatch = url.match(/drive\.google\.com\/(?:open|uc|thumbnail)\?.*?id=([a-zA-Z0-9_-]+)/);
+    if (idMatch) {
+      fileId = idMatch[1];
+    }
+  }
+
+  if (fileId) {
+    return `https://lh3.googleusercontent.com/d/${fileId}`;
+  }
+
+  // Google Drive가 아닌 URL은 그대로 반환
+  return url;
 }
 
 /**
