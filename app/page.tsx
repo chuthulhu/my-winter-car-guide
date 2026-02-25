@@ -128,9 +128,11 @@ export default function CarAssemblyGuide() {
           <>
             <StepCard
               step={currentStep}
+              steps={steps}
               activeTab={activeTab}
               currentIndex={currentIndex}
               totalSteps={steps.length}
+              onStepChange={setCurrentIndex}
             />
             <StepNavigation
               currentIndex={currentIndex}

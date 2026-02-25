@@ -100,23 +100,29 @@ function parseImageUrl(cell: GvizCell | null | undefined): string {
 
 /**
  * Google Drive 공유/직통 링크를 직접 이미지 표시가 가능한 URL로 변환합니다.
- * 이미 직접 표시 가능하거나 Google Drive가 아닌 URL은 그대로 반환합니다.
+ *
+ * thumbnail API (?sz=w2000)를 사용하여 올바른 Content-Type 헤더로 이미지를 서빙합니다.
+ * lh3.googleusercontent.com URL은 ORB(Opaque Response Blocking)에 의해
+ * 차단될 수 있으므로 thumbnail API로 통일합니다.
  */
 function convertGoogleDriveUrl(url: string): string {
-  // 이미 lh3.googleusercontent.com이면 그대로 반환
-  if (url.includes('lh3.googleusercontent.com')) {
-    return url;
-  }
-
   let fileId = '';
 
-  // drive.google.com/file/d/FILE_ID/... 형태
-  const fileMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (fileMatch) {
-    fileId = fileMatch[1];
+  // lh3.googleusercontent.com/d/FILE_ID 형태
+  const lh3Match = url.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/);
+  if (lh3Match) {
+    fileId = lh3Match[1];
   }
 
-  // drive.google.com/open?id=FILE_ID 또는 uc?id=FILE_ID 또는 thumbnail?id=FILE_ID 형태
+  // drive.google.com/file/d/FILE_ID/... 형태
+  if (!fileId) {
+    const fileMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (fileMatch) {
+      fileId = fileMatch[1];
+    }
+  }
+
+  // drive.google.com/open?id=FILE_ID, uc?id=FILE_ID, thumbnail?id=FILE_ID 형태
   if (!fileId) {
     const idMatch = url.match(/drive\.google\.com\/(?:open|uc|thumbnail)\?.*?id=([a-zA-Z0-9_-]+)/);
     if (idMatch) {
@@ -125,7 +131,8 @@ function convertGoogleDriveUrl(url: string): string {
   }
 
   if (fileId) {
-    return `https://lh3.googleusercontent.com/d/${fileId}`;
+    // thumbnail API: 올바른 image/* Content-Type으로 응답하여 ORB 차단 방지
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w2000`;
   }
 
   // Google Drive가 아닌 URL은 그대로 반환

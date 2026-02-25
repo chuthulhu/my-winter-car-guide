@@ -2,12 +2,14 @@ import { GuideStep } from '@/app/types';
 
 interface StepCardProps {
   step: GuideStep | undefined;
+  steps: GuideStep[];
   activeTab: string;
   currentIndex: number;
   totalSteps: number;
+  onStepChange: (index: number) => void;
 }
 
-export default function StepCard({ step, activeTab, currentIndex, totalSteps }: StepCardProps) {
+export default function StepCard({ step, steps, activeTab, currentIndex, totalSteps, onStepChange }: StepCardProps) {
   return (
     <>
       {/* 탭 이름 및 진행 카운터 */}
@@ -23,6 +25,20 @@ export default function StepCard({ step, activeTab, currentIndex, totalSteps }: 
           style={{ width: totalSteps > 0 ? `${((currentIndex + 1) / totalSteps) * 100}%` : '0%' }}
         />
       </div>
+
+      {/* 부품명 드롭다운 — 특정 단계로 바로 이동 */}
+      <select
+        value={currentIndex}
+        onChange={(e) => onStepChange(Number(e.target.value))}
+        className="w-full mb-6 p-3 bg-surface border border-border rounded-xl text-foreground text-sm appearance-none cursor-pointer hover:border-primary transition-all focus:outline-none focus:border-primary"
+        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7585' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`, backgroundPosition: 'right 0.75rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.25rem' }}
+      >
+        {steps.map((s, idx) => (
+          <option key={idx} value={idx} className="bg-surface text-foreground">
+            Step {s.step} — {s.partName}
+          </option>
+        ))}
+      </select>
 
       {/* 단계 제목 */}
       <h1 className="text-2xl font-bold mb-8 min-h-[4rem] flex flex-col justify-center leading-tight">
@@ -94,6 +110,7 @@ export default function StepCard({ step, activeTab, currentIndex, totalSteps }: 
               alt={step.partName}
               className="w-full h-auto object-contain bg-surface"
               loading="lazy"
+              referrerPolicy="no-referrer"
             />
           </div>
         )}
