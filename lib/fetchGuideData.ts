@@ -52,6 +52,43 @@ function parseScrews(sizeRaw: string, countRaw: string): ScrewInfo[] {
 }
 
 /**
+ * Google Sheets IMAGE() 함수가 포함된 셀에서 이미지 URL을 추출합니다.
+ *
+ * gviz API 응답에서 =IMAGE("url") 셀은 여러 형태로 반환될 수 있습니다:
+ *   1) v에 직접 URL 문자열 (드문 경우)
+ *   2) f에 "IMAGE(\"url\")" 형태의 수식 텍스트
+ *   3) v가 null이고 f에만 값이 있는 경우
+ *
+ * 이 함수는 모든 경우를 처리하여 순수 URL을 반환합니다.
+ */
+function parseImageUrl(cell: GvizCell | null | undefined): string {
+  if (!cell) return '';
+
+  // v 또는 f에서 raw 문자열 추출
+  const raw = cell.v?.toString() || cell.f?.toString() || '';
+  if (!raw) return '';
+
+  // 이미 http(s):// URL이면 그대로 반환
+  if (/^https?:\/\//i.test(raw)) {
+    return raw;
+  }
+
+  // IMAGE("url") 또는 IMAGE("url", ...) 형태에서 URL 추출
+  const imageMatch = raw.match(/IMAGE\s*\(\s*"([^"]+)"/i);
+  if (imageMatch) {
+    return imageMatch[1];
+  }
+
+  // 그 외 문자열에서 http(s) URL 패턴 추출 시도
+  const urlMatch = raw.match(/(https?:\/\/[^\s"')\]]+)/i);
+  if (urlMatch) {
+    return urlMatch[1];
+  }
+
+  return '';
+}
+
+/**
  * Google Sheets의 gviz 공개 엔드포인트에서 탭(시트)별 가이드 데이터를 가져옵니다.
  *
  * gviz 응답은 `google.visualization.Query.setResponse({...});` 형태이므로
@@ -59,7 +96,7 @@ function parseScrews(sizeRaw: string, countRaw: string): ScrewInfo[] {
  *
  * 스프레드시트 컬럼 매핑 (A~G):
  *   A(0): step, B(1): partName, C(2): screwSize, D(3): screwCount,
- *   E(4): note1(설명 및 팁), F(5): note2(추가 참고), G(6): imageUrl
+ *   E(4): note1(설명 및 팁), F(5): note2(추가 참고), G(6): imageUrl (IMAGE 함수 지원)
  */
 export async function fetchGuideData(tabName: string): Promise<GuideStep[]> {
   if (!SPREADSHEET_ID) {
@@ -95,7 +132,7 @@ export async function fetchGuideData(tabName: string): Promise<GuideStep[]> {
         screws: parseScrews(sizeRaw, countRaw),
         note1: c[4]?.v?.toString() || '',
         note2: c[5]?.v?.toString() || '',
-        imageUrl: c[6]?.v?.toString() || '',
+        imageUrl: parseImageUrl(c[6]),
       };
     })
     .filter((step): step is GuideStep => step !== null && step.step !== '');

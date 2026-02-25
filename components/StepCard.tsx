@@ -39,7 +39,7 @@ export default function StepCard({ step, activeTab, currentIndex, totalSteps }: 
           <img
             src={step.imageUrl}
             alt={step.partName}
-            className="w-full h-auto object-contain max-h-64 bg-surface"
+            className="w-full h-auto object-contain bg-surface"
             loading="lazy"
           />
         </div>
