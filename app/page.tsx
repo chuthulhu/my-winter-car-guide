@@ -14,6 +14,14 @@ const TABS = [
   { id: '엔진장착/기어/하부조립', name: '하부 조립' },
 ];
 
+// 캐시 TTL: 5분
+const CACHE_TTL = 5 * 60 * 1000;
+
+interface CacheEntry {
+  data: GuideStep[];
+  timestamp: number;
+}
+
 export default function CarAssemblyGuide() {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   const [steps, setSteps] = useState<GuideStep[]>([]);
@@ -21,13 +29,14 @@ export default function CarAssemblyGuide() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 탭별 데이터 캐시
-  const cacheRef = useRef<Record<string, GuideStep[]>>({});
+  // TTL 기반 탭별 데이터 캐시
+  const cacheRef = useRef<Record<string, CacheEntry>>({});
 
-  const loadData = useCallback(async (tabId: string) => {
-    // 캐시에 있으면 재사용
-    if (cacheRef.current[tabId]) {
-      setSteps(cacheRef.current[tabId]);
+  const loadData = useCallback(async (tabId: string, forceRefresh = false) => {
+    // 캐시 확인 (TTL 미만이면 재사용)
+    const cached = cacheRef.current[tabId];
+    if (!forceRefresh && cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      setSteps(cached.data);
       setCurrentIndex(0);
       setError(null);
       return;
@@ -37,7 +46,7 @@ export default function CarAssemblyGuide() {
     setError(null);
     try {
       const data = await fetchGuideData(tabId);
-      cacheRef.current[tabId] = data;
+      cacheRef.current[tabId] = { data, timestamp: Date.now() };
       setSteps(data);
       setCurrentIndex(0);
     } catch (err) {
@@ -67,14 +76,41 @@ export default function CarAssemblyGuide() {
 
   const handlePrev = () => setCurrentIndex((prev) => Math.max(0, prev - 1));
   const handleNext = () => setCurrentIndex((prev) => Math.min(steps.length - 1, prev + 1));
-  const handleRetry = () => loadData(activeTab);
+  const handleRetry = () => loadData(activeTab, true);
+  const handleRefresh = () => loadData(activeTab, true);
 
   const currentStep = steps[currentIndex];
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-950 text-white font-sans">
       <div className="w-full max-w-lg p-6 bg-gray-900 rounded-3xl shadow-2xl border border-gray-800">
-        <TabSelector tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
+
+        {/* 탭 선택 + 새로고침 버튼 */}
+        <div className="flex items-center gap-2 mb-8">
+          <div className="flex-1 overflow-x-auto">
+            <TabSelector tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
+          </div>
+          <button
+            onClick={handleRefresh}
+            disabled={loading}
+            className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-all disabled:opacity-30 shrink-0"
+            title="데이터 새로고침"
+          >
+            <svg
+              className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          </button>
+        </div>
 
         {loading ? (
           <div className="py-20 text-center animate-pulse">데이터를 가져오는 중...</div>

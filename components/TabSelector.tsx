@@ -11,7 +11,7 @@ interface TabSelectorProps {
 
 export default function TabSelector({ tabs, activeTab, onTabChange }: TabSelectorProps) {
   return (
-    <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
+    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
       {tabs.map((tab) => (
         <button
           key={tab.id}

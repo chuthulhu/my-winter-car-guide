@@ -32,16 +32,48 @@ export default function StepCard({ step, activeTab, currentIndex, totalSteps }: 
         {step ? step.partName : '데이터가 없습니다.'}
       </h1>
 
-      {/* 나사 정보 */}
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
-          <span className="block text-xs text-gray-500 uppercase mb-1">나사 크기</span>
-          <span className="text-xl font-bold text-yellow-500">{step?.screwSize || '-'}</span>
+      {/* 이미지 (있는 경우에만 표시) */}
+      {step?.imageUrl && (
+        <div className="mb-8 rounded-xl overflow-hidden border border-gray-700">
+          {/* eslint-disable-next-line @next/next/no-img-element -- 정적 출력 모드에서 next/image 최적화 미지원, 외부 URL 사용 */}
+          <img
+            src={step.imageUrl}
+            alt={step.partName}
+            className="w-full h-auto object-contain max-h-64 bg-gray-800"
+            loading="lazy"
+          />
         </div>
-        <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
-          <span className="block text-xs text-gray-500 uppercase mb-1">나사 개수</span>
-          <span className="text-xl font-bold text-blue-400">{step?.screwCount || '-'}</span>
-        </div>
+      )}
+
+      {/* 나사 정보 — 복수 나사 지원 */}
+      <div className="space-y-3 mb-8">
+        {step?.screws.map((screw, idx) => (
+          <div key={idx} className="grid grid-cols-2 gap-4">
+            <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
+              <span className="block text-xs text-gray-500 uppercase mb-1">
+                나사 크기{step.screws.length > 1 ? ` ${idx + 1}` : ''}
+              </span>
+              <span className="text-xl font-bold text-yellow-500">{screw.size}</span>
+            </div>
+            <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
+              <span className="block text-xs text-gray-500 uppercase mb-1">
+                나사 개수{step.screws.length > 1 ? ` ${idx + 1}` : ''}
+              </span>
+              <span className="text-xl font-bold text-blue-400">{screw.count}</span>
+            </div>
+          </div>
+        )) || (
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
+              <span className="block text-xs text-gray-500 uppercase mb-1">나사 크기</span>
+              <span className="text-xl font-bold text-yellow-500">-</span>
+            </div>
+            <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
+              <span className="block text-xs text-gray-500 uppercase mb-1">나사 개수</span>
+              <span className="text-xl font-bold text-blue-400">-</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 설명 섹션 */}
