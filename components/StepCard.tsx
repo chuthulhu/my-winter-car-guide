@@ -11,22 +11,22 @@ export default function StepCard({ step, activeTab, currentIndex, totalSteps }: 
   return (
     <>
       {/* 탭 이름 및 진행 카운터 */}
-      <div className="mb-4 flex justify-between items-center text-sm font-mono text-blue-500">
+      <div className="mb-4 flex justify-between items-center text-sm font-mono text-accent">
         <span>{activeTab}</span>
         <span>{currentIndex + 1} / {totalSteps > 0 ? totalSteps : '-'}</span>
       </div>
 
       {/* 프로그레스 바 */}
-      <div className="w-full bg-gray-800 rounded-full h-1.5 mb-6">
+      <div className="w-full bg-border rounded-full h-1.5 mb-6">
         <div
-          className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+          className="bg-primary h-1.5 rounded-full transition-all duration-300"
           style={{ width: totalSteps > 0 ? `${((currentIndex + 1) / totalSteps) * 100}%` : '0%' }}
         />
       </div>
 
       {/* 단계 제목 */}
       <h1 className="text-2xl font-bold mb-8 min-h-[4rem] flex flex-col justify-center leading-tight">
-        <span className="text-sm text-gray-400 font-normal mb-1">
+        <span className="text-sm text-text-secondary font-normal mb-1">
           STEP {step ? step.step : '-'}
         </span>
         {step ? step.partName : '데이터가 없습니다.'}
@@ -34,12 +34,12 @@ export default function StepCard({ step, activeTab, currentIndex, totalSteps }: 
 
       {/* 이미지 (있는 경우에만 표시) */}
       {step?.imageUrl && (
-        <div className="mb-8 rounded-xl overflow-hidden border border-gray-700">
+        <div className="mb-8 rounded-xl overflow-hidden border border-border">
           {/* eslint-disable-next-line @next/next/no-img-element -- 정적 출력 모드에서 next/image 최적화 미지원, 외부 URL 사용 */}
           <img
             src={step.imageUrl}
             alt={step.partName}
-            className="w-full h-auto object-contain max-h-64 bg-gray-800"
+            className="w-full h-auto object-contain max-h-64 bg-surface"
             loading="lazy"
           />
         </div>
@@ -49,28 +49,28 @@ export default function StepCard({ step, activeTab, currentIndex, totalSteps }: 
       <div className="space-y-3 mb-8">
         {step?.screws.map((screw, idx) => (
           <div key={idx} className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
-              <span className="block text-xs text-gray-500 uppercase mb-1">
+            <div className="bg-surface-dim p-4 rounded-xl border border-border-dim">
+              <span className="block text-sm text-text-tertiary uppercase mb-1">
                 나사 크기{step.screws.length > 1 ? ` ${idx + 1}` : ''}
               </span>
-              <span className="text-xl font-bold text-yellow-500">{screw.size}</span>
+              <span className="text-xl font-bold text-accent">{screw.size}</span>
             </div>
-            <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
-              <span className="block text-xs text-gray-500 uppercase mb-1">
+            <div className="bg-surface-dim p-4 rounded-xl border border-border-dim">
+              <span className="block text-sm text-text-tertiary uppercase mb-1">
                 나사 개수{step.screws.length > 1 ? ` ${idx + 1}` : ''}
               </span>
-              <span className="text-xl font-bold text-blue-400">{screw.count}</span>
+              <span className="text-xl font-bold text-primary">{screw.count}</span>
             </div>
           </div>
         )) || (
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
-              <span className="block text-xs text-gray-500 uppercase mb-1">나사 크기</span>
-              <span className="text-xl font-bold text-yellow-500">-</span>
+            <div className="bg-surface-dim p-4 rounded-xl border border-border-dim">
+              <span className="block text-sm text-text-tertiary uppercase mb-1">나사 크기</span>
+              <span className="text-xl font-bold text-accent">-</span>
             </div>
-            <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
-              <span className="block text-xs text-gray-500 uppercase mb-1">나사 개수</span>
-              <span className="text-xl font-bold text-blue-400">-</span>
+            <div className="bg-surface-dim p-4 rounded-xl border border-border-dim">
+              <span className="block text-sm text-text-tertiary uppercase mb-1">나사 개수</span>
+              <span className="text-xl font-bold text-primary">-</span>
             </div>
           </div>
         )}
@@ -78,17 +78,17 @@ export default function StepCard({ step, activeTab, currentIndex, totalSteps }: 
 
       {/* 설명 섹션 */}
       <div className="space-y-3 mb-10">
-        <div className="bg-gray-800/30 p-4 rounded-xl border border-gray-700/50">
-          <span className="block text-xs text-blue-400 uppercase mb-2 font-bold">📌 설명 및 팁</span>
-          <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">
+        <div className="bg-accent-dim p-4 rounded-xl border border-accent-border">
+          <span className="block text-sm text-accent uppercase mb-2 font-bold">📌 설명 및 팁</span>
+          <p className="text-text-secondary text-sm leading-relaxed whitespace-pre-line">
             {step?.note1 || '추가 설명이 없습니다.'}
           </p>
         </div>
 
         {step?.note2 && (
-          <div className="bg-yellow-900/20 p-4 rounded-xl border border-yellow-700/30">
-            <span className="block text-xs text-yellow-500 uppercase mb-2 font-bold">⚠️ 추가 참고사항</span>
-            <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">
+          <div className="bg-warning-bg p-4 rounded-xl border border-warning-border">
+            <span className="block text-sm text-warning uppercase mb-2 font-bold">⚠️ 추가 참고사항</span>
+            <p className="text-text-secondary text-sm leading-relaxed whitespace-pre-line">
               {step.note2}
             </p>
           </div>

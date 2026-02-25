@@ -18,8 +18,8 @@ export default function TabSelector({ tabs, activeTab, onTabChange }: TabSelecto
           onClick={() => onTabChange(tab.id)}
           className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
             activeTab === tab.id
-              ? 'bg-blue-600 text-white font-bold'
-              : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              ? 'bg-primary text-white font-bold shadow-md shadow-primary/20'
+              : 'bg-surface text-text-secondary hover:bg-surface-hover hover:text-foreground'
           }`}
         >
           {tab.name}

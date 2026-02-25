@@ -57,9 +57,9 @@ function parseScrews(sizeRaw: string, countRaw: string): ScrewInfo[] {
  * gviz 응답은 `google.visualization.Query.setResponse({...});` 형태이므로
  * 앞 47글자와 뒤 2글자를 잘라내어 순수 JSON으로 파싱합니다.
  *
- * 스프레드시트 컬럼 매핑:
+ * 스프레드시트 컬럼 매핑 (A~G):
  *   A(0): step, B(1): partName, C(2): screwSize, D(3): screwCount,
- *   E(4): (미사용), F(5): note1, G(6): note2, H(7): imageUrl
+ *   E(4): note1(설명 및 팁), F(5): note2(추가 참고), G(6): imageUrl
  */
 export async function fetchGuideData(tabName: string): Promise<GuideStep[]> {
   if (!SPREADSHEET_ID) {
@@ -93,10 +93,9 @@ export async function fetchGuideData(tabName: string): Promise<GuideStep[]> {
         step: c[0]?.f || c[0]?.v?.toString() || '',
         partName: c[1]?.v?.toString() || '',
         screws: parseScrews(sizeRaw, countRaw),
-        // c[4]는 현재 사용하지 않는 컬럼
-        note1: c[5]?.v?.toString() || '',
-        note2: c[6]?.v?.toString() || '',
-        imageUrl: c[7]?.v?.toString() || '',
+        note1: c[4]?.v?.toString() || '',
+        note2: c[5]?.v?.toString() || '',
+        imageUrl: c[6]?.v?.toString() || '',
       };
     })
     .filter((step): step is GuideStep => step !== null && step.step !== '');

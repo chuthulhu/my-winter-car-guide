@@ -82,8 +82,8 @@ export default function CarAssemblyGuide() {
   const currentStep = steps[currentIndex];
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-950 text-white font-sans">
-      <div className="w-full max-w-lg p-6 bg-gray-900 rounded-3xl shadow-2xl border border-gray-800">
+    <main className="flex flex-col items-center justify-center min-h-screen p-4 bg-background text-foreground font-sans">
+      <div className="w-full max-w-lg p-6 bg-surface rounded-3xl shadow-2xl border border-border">
 
         {/* 탭 선택 + 새로고침 버튼 */}
         <div className="flex items-center gap-2 mb-8">
@@ -93,7 +93,7 @@ export default function CarAssemblyGuide() {
           <button
             onClick={handleRefresh}
             disabled={loading}
-            className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-all disabled:opacity-30 shrink-0"
+            className="p-2 text-text-secondary hover:text-accent hover:bg-surface-hover rounded-xl transition-all disabled:opacity-30 shrink-0"
             title="데이터 새로고침"
           >
             <svg
@@ -113,13 +113,13 @@ export default function CarAssemblyGuide() {
         </div>
 
         {loading ? (
-          <div className="py-20 text-center animate-pulse">데이터를 가져오는 중...</div>
+          <div className="py-20 text-center text-accent animate-pulse">데이터를 가져오는 중...</div>
         ) : error ? (
           <div className="py-20 text-center">
-            <p className="text-red-500 mb-4">{error}</p>
+            <p className="text-error mb-4">{error}</p>
             <button
               onClick={handleRetry}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl transition-all font-semibold text-sm"
+              className="px-6 py-2 bg-primary hover:bg-primary-hover rounded-xl transition-all font-semibold text-sm"
             >
               다시 시도
             </button>

@@ -1,13 +1,60 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #0a0a0a;
-  --color-foreground: #ededed;
+  /* Primary Colors */
+  --color-primary: #1C5D99;
+  --color-primary-hover: #2470B3;
+  --color-accent: #BBCDE5;
+  --color-accent-dim: rgba(187, 205, 229, 0.15);
+  --color-accent-border: rgba(187, 205, 229, 0.25);
+
+  /* Neutrals — Dark Mode (default) */
+  --color-background: #0e1117;
+  --color-foreground: #FFFFFF;
+  --color-surface: #171b22;
+  --color-surface-hover: #1f242d;
+  --color-surface-dim: rgba(23, 27, 34, 0.5);
+  --color-border: #2a303a;
+  --color-border-dim: rgba(42, 48, 58, 0.5);
+  --color-text-secondary: #9aa3b3;
+  --color-text-tertiary: #6b7585;
+
+  /* Semantic */
+  --color-warning: #c9933a;
+  --color-warning-bg: rgba(201, 147, 58, 0.12);
+  --color-warning-border: rgba(201, 147, 58, 0.25);
+  --color-error: #e55757;
+
+  /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+/* 라이트 모드 */
+@media (prefers-color-scheme: light) {
+  @theme inline {
+    --color-background: #f5f7fa;
+    --color-foreground: #222222;
+    --color-surface: #ffffff;
+    --color-surface-hover: #eef1f5;
+    --color-surface-dim: rgba(255, 255, 255, 0.7);
+    --color-border: #d0d5dd;
+    --color-border-dim: rgba(208, 213, 221, 0.5);
+    --color-text-secondary: #4a5568;
+    --color-text-tertiary: #6b7585;
+    --color-accent-dim: rgba(28, 93, 153, 0.08);
+    --color-accent-border: rgba(28, 93, 153, 0.2);
+    --color-warning-bg: rgba(201, 147, 58, 0.08);
+    --color-warning-border: rgba(201, 147, 58, 0.2);
+  }
 }
 
 body {
   background: var(--color-background);
   color: var(--color-foreground);
+}
+
+/* 최소 글꼴 크기: 10pt (≈ 13.33px = 0.833rem) */
+* {
+  -webkit-text-size-adjust: 100%;
 }
