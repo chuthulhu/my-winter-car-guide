@@ -13,33 +13,44 @@ interface StepCardProps {
 }
 
 export default function StepCard({ step, steps, activeTab, currentIndex, totalSteps, onStepChange }: StepCardProps) {
-  const [partImageLoaded, setPartImageLoaded] = useState(false);
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
+
+  const handleLoad = (url: string) => {
+    setLoadedImages(prev => new Set(prev).add(url));
+  };
+
+  const handleError = (url: string) => {
+    setLoadedImages(prev => {
+      const next = new Set(prev);
+      next.delete(url);
+      return next;
+    });
+  };
 
   return (
     <>
       {/* 탭 이름 및 진행 카운터 */}
-      <div className="mb-4 flex justify-between items-center text-sm font-mono text-text-secondary">
-        <span>{activeTab}</span>
-        <span>{currentIndex + 1} / {totalSteps > 0 ? totalSteps : '-'}</span>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-sm font-semibold text-text-secondary">{activeTab}</span>
+        <span className="text-sm text-text-secondary">{currentIndex + 1} / {totalSteps}</span>
       </div>
 
-      {/* 프로그레스 바 */}
-      <div className="w-full bg-border rounded-full h-1.5 mb-6">
+      {/* 진행 바 */}
+      <div className="h-1.5 bg-border rounded-full mb-4 overflow-hidden">
         <div
-          className="bg-primary h-1.5 rounded-full transition-all duration-300"
-          style={{ width: totalSteps > 0 ? `${((currentIndex + 1) / totalSteps) * 100}%` : '0%' }}
+          className="h-full bg-primary rounded-full transition-all duration-300"
+          style={{ width: `${((currentIndex + 1) / totalSteps) * 100}%` }}
         />
       </div>
 
-      {/* 부품명 드롭다운 — 특정 단계로 바로 이동 */}
+      {/* 드롭다운 — 특정 단계로 바로 점프 */}
       <select
+        className="w-full p-3 mb-4 border border-border rounded-xl bg-surface text-sm text-foreground appearance-none cursor-pointer focus:outline-none focus:border-primary"
         value={currentIndex}
         onChange={(e) => onStepChange(Number(e.target.value))}
-        className="w-full mb-6 p-3 bg-surface border border-border rounded-xl text-foreground text-sm appearance-none cursor-pointer hover:border-primary transition-all focus:outline-none focus:border-primary"
-        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7585' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`, backgroundPosition: 'right 0.75rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.25rem' }}
       >
         {steps.map((s, idx) => (
-          <option key={idx} value={idx} className="bg-surface text-foreground">
+          <option key={idx} value={idx}>
             Step {s.step} — {s.partName}
           </option>
         ))}
@@ -53,19 +64,21 @@ export default function StepCard({ step, steps, activeTab, currentIndex, totalSt
         {step ? step.partName : '데이터가 없습니다.'}
       </h1>
 
-      {/* 부품 이미지 (H열 — 로드 성공 시에만 표시) */}
-      {step?.partImageUrl && (
-        <div className={`flex justify-center overflow-hidden transition-all duration-300 ${partImageLoaded ? 'mb-8 max-h-[150px]' : 'max-h-0'}`}>
-          {/* eslint-disable-next-line @next/next/no-img-element -- 정적 출력 모드에서 next/image 미지원 */}
-          <img
-            key={`${step.step}-${step.partImageUrl}`}
-            src={step.partImageUrl}
-            alt={`${step.partName} 부품 이미지`}
-            className="max-h-[150px] w-auto object-contain"
-            referrerPolicy="no-referrer"
-            onLoad={() => setPartImageLoaded(true)}
-            onError={() => setPartImageLoaded(false)}
-          />
+      {/* 부품 이미지 (H열 — /로 구분 시 최대 2개, 로드 성공 시에만 표시) */}
+      {step?.partImageUrl && step.partImageUrl.length > 0 && (
+        <div className={`flex justify-center gap-4 overflow-hidden transition-all duration-300 ${step.partImageUrl.some(u => loadedImages.has(u)) ? 'mb-8 max-h-[150px]' : 'max-h-0'}`}>
+          {step.partImageUrl.map((url, idx) => (
+            // eslint-disable-next-line @next/next/no-img-element -- 정적 출력 모드에서 next/image 미지원
+            <img
+              key={`${step.step}-part-${idx}-${url}`}
+              src={url}
+              alt={`${step.partName} 부품 이미지 ${idx + 1}`}
+              className="max-h-[150px] w-auto object-contain"
+              referrerPolicy="no-referrer"
+              onLoad={() => handleLoad(url)}
+              onError={() => handleError(url)}
+            />
+          ))}
         </div>
       )}
 

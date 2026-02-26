@@ -161,6 +161,32 @@ function convertFandomImageUrl(url: string): string {
 }
 
 /**
+ * H열 부품 이미지 셀을 /로 분리하여 최대 2개의 URL 배열로 반환합니다.
+ * 각 URL은 parseImageUrl을 통해 정규화됩니다.
+ */
+function parsePartImageUrls(cell: GvizCell | null | undefined): string[] {
+  if (!cell) return [];
+  const raw = cell.v?.toString() || cell.f?.toString() || '';
+  if (!raw) return [];
+
+  // / 구분자로 분리 (URL 내부 슬래시와 구별하기 위해 공백+/+공백 또는 양쪽 공백 패턴 우선)
+  // 단순 split은 URL을 깨뜨리므로, 셀에 여러 URL이 있을 때는
+  // http로 시작하는 패턴 기준으로 분리
+  const urls = raw.split(/\s*\/\s*(?=https?:)/i);
+
+  return urls
+    .slice(0, 2) // 최대 2개
+    .map(u => {
+      // 개별 URL에 대해 parseImageUrl과 동일한 처리
+      const trimmed = u.trim();
+      if (!trimmed) return '';
+      const fakeCell = { v: trimmed } as GvizCell;
+      return parseImageUrl(fakeCell);
+    })
+    .filter(u => u !== '');
+}
+
+/**
  * Google Sheets의 gviz 공개 엔드포인트에서 탭(시트)별 가이드 데이터를 가져옵니다.
  *
  * gviz 응답은 `google.visualization.Query.setResponse({...});` 형태이므로
@@ -205,7 +231,7 @@ export async function fetchGuideData(tabName: string): Promise<GuideStep[]> {
         note1: c[4]?.v?.toString() || '',
         note2: c[5]?.v?.toString() || '',
         imageUrl: parseImageUrl(c[6]),
-        partImageUrl: parseImageUrl(c[7]),
+        partImageUrl: parsePartImageUrls(c[7]),
       };
     })
     .filter((step): step is GuideStep => step !== null && step.step !== '');
