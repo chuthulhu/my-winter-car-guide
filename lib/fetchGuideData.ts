@@ -145,9 +145,9 @@ function convertGoogleDriveUrl(url: string): string {
  * gviz 응답은 `google.visualization.Query.setResponse({...});` 형태이므로
  * 앞 47글자와 뒤 2글자를 잘라내어 순수 JSON으로 파싱합니다.
  *
- * 스프레드시트 컬럼 매핑 (A~G):
+ * 스프레드시트 컬럼 매핑 (A~H):
  *   A(0): step, B(1): partName, C(2): screwSize, D(3): screwCount,
- *   E(4): note1(설명 및 팁), F(5): note2(추가 참고), G(6): imageUrl (IMAGE 함수 지원)
+ *   E(4): note1(설명 및 팁), F(5): note2(추가 참고), G(6): imageUrl, H(7): partImageUrl
  */
 export async function fetchGuideData(tabName: string): Promise<GuideStep[]> {
   if (!SPREADSHEET_ID) {
@@ -184,6 +184,7 @@ export async function fetchGuideData(tabName: string): Promise<GuideStep[]> {
         note1: c[4]?.v?.toString() || '',
         note2: c[5]?.v?.toString() || '',
         imageUrl: parseImageUrl(c[6]),
+        partImageUrl: parseImageUrl(c[7]),
       };
     })
     .filter((step): step is GuideStep => step !== null && step.step !== '');

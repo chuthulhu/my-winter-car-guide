@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { GuideStep } from '@/app/types';
 
 interface StepCardProps {
@@ -10,6 +13,8 @@ interface StepCardProps {
 }
 
 export default function StepCard({ step, steps, activeTab, currentIndex, totalSteps, onStepChange }: StepCardProps) {
+  const [partImageLoaded, setPartImageLoaded] = useState(false);
+
   return (
     <>
       {/* 탭 이름 및 진행 카운터 */}
@@ -47,6 +52,23 @@ export default function StepCard({ step, steps, activeTab, currentIndex, totalSt
         </span>
         {step ? step.partName : '데이터가 없습니다.'}
       </h1>
+
+      {/* 부품 이미지 (H열 — 로드 성공 시에만 표시) */}
+      {step?.partImageUrl && (
+        <div className={`mb-8 rounded-xl overflow-hidden border border-border ${partImageLoaded ? '' : 'hidden'}`}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- 정적 출력 모드에서 next/image 미지원 */}
+          <img
+            key={`${step.step}-${step.partImageUrl}`}
+            src={step.partImageUrl}
+            alt={`${step.partName} 부품 이미지`}
+            className="w-full h-auto object-contain bg-surface"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            onLoad={() => setPartImageLoaded(true)}
+            onError={() => setPartImageLoaded(false)}
+          />
+        </div>
+      )}
 
       {/* 나사 정보 — 복수 나사 지원 */}
       <div className="space-y-3 mb-8">
