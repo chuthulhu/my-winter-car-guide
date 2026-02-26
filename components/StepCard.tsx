@@ -55,14 +55,13 @@ export default function StepCard({ step, steps, activeTab, currentIndex, totalSt
 
       {/* 부품 이미지 (H열 — 로드 성공 시에만 표시) */}
       {step?.partImageUrl && (
-        <div className={`mb-8 flex justify-center ${partImageLoaded ? '' : 'hidden'}`}>
+        <div className={`flex justify-center overflow-hidden transition-all duration-300 ${partImageLoaded ? 'mb-8 max-h-[150px]' : 'max-h-0'}`}>
           {/* eslint-disable-next-line @next/next/no-img-element -- 정적 출력 모드에서 next/image 미지원 */}
           <img
             key={`${step.step}-${step.partImageUrl}`}
             src={step.partImageUrl}
             alt={`${step.partName} 부품 이미지`}
             className="max-h-[150px] w-auto object-contain"
-            loading="lazy"
             referrerPolicy="no-referrer"
             onLoad={() => setPartImageLoaded(true)}
             onError={() => setPartImageLoaded(false)}
