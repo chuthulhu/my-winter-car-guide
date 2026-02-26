@@ -46,7 +46,7 @@ export default function StepCard({ step, steps, activeTab, currentIndex, totalSt
       </select>
 
       {/* 단계 제목 */}
-      <h1 className="text-2xl font-bold mb-8 min-h-[4rem] flex flex-col justify-center leading-tight">
+      <h1 className="text-2xl font-bold mb-[10px] min-h-[4rem] flex flex-col justify-center leading-tight">
         <span className="text-sm text-text-secondary font-normal mb-1">
           STEP {step ? step.step : '-'}
         </span>
@@ -55,13 +55,13 @@ export default function StepCard({ step, steps, activeTab, currentIndex, totalSt
 
       {/* 부품 이미지 (H열 — 로드 성공 시에만 표시) */}
       {step?.partImageUrl && (
-        <div className={`mb-8 rounded-xl overflow-hidden border border-border ${partImageLoaded ? '' : 'hidden'}`}>
+        <div className={`mb-8 flex justify-center ${partImageLoaded ? '' : 'hidden'}`}>
           {/* eslint-disable-next-line @next/next/no-img-element -- 정적 출력 모드에서 next/image 미지원 */}
           <img
             key={`${step.step}-${step.partImageUrl}`}
             src={step.partImageUrl}
             alt={`${step.partName} 부품 이미지`}
-            className="w-full h-auto object-contain bg-surface"
+            className="max-h-[150px] w-auto object-contain"
             loading="lazy"
             referrerPolicy="no-referrer"
             onLoad={() => setPartImageLoaded(true)}

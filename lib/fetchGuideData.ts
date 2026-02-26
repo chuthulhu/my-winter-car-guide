@@ -145,29 +145,19 @@ function convertGoogleDriveUrl(url: string): string {
 }
 
 /**
- * Fandom/Wikia 이미지 URL을 img 태그에서 임베딩 가능한 형태로 변환합니다.
+ * Fandom/Wikia 이미지 URL을 img 태그에서 로드 가능한 형태로 변환합니다.
  *
- * static.wikia.nocookie.net 이미지는 직접 URL로 접근하면 보이지만
- * img 태그에서는 차단될 수 있습니다. /revision/latest 경로를 추가하면 해결됩니다.
- *
- * 예: .../images/9/98/Airfilter.png → .../images/9/98/Airfilter.png/revision/latest
+ * static.wikia.nocookie.net 이미지는 브라우저 주소창에서는 보이지만
+ * img 태그에서는 핫링킹 방지로 차단됩니다.
+ * images.weserv.nl 프록시를 통해 서버 측에서 이미지를 가져오면 해결됩니다.
  */
 function convertFandomImageUrl(url: string): string {
   if (!url.includes('static.wikia.nocookie.net')) {
     return url;
   }
 
-  // 이미 /revision/ 경로가 포함되어 있으면 그대로 반환
-  if (url.includes('/revision/')) {
-    return url;
-  }
-
-  // /images/ 경로의 파일에 /revision/latest 추가
-  if (/\/images\/[a-z0-9]\/[a-z0-9]{2}\//i.test(url)) {
-    return `${url}/revision/latest`;
-  }
-
-  return url;
+  // weserv.nl 이미지 프록시를 통해 핫링킹 차단 우회
+  return `https://images.weserv.nl/?url=${encodeURIComponent(url)}`;
 }
 
 /**
