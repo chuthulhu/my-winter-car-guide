@@ -95,7 +95,12 @@ function parseImageUrl(cell: GvizCell | null | undefined): string {
   if (!url) return '';
 
   // Google Drive URL → 직접 이미지 URL 변환
-  return convertGoogleDriveUrl(url);
+  url = convertGoogleDriveUrl(url);
+
+  // Fandom/Wikia 이미지 URL → 임베딩 가능한 URL 변환
+  url = convertFandomImageUrl(url);
+
+  return url;
 }
 
 /**
@@ -136,6 +141,32 @@ function convertGoogleDriveUrl(url: string): string {
   }
 
   // Google Drive가 아닌 URL은 그대로 반환
+  return url;
+}
+
+/**
+ * Fandom/Wikia 이미지 URL을 img 태그에서 임베딩 가능한 형태로 변환합니다.
+ *
+ * static.wikia.nocookie.net 이미지는 직접 URL로 접근하면 보이지만
+ * img 태그에서는 차단될 수 있습니다. /revision/latest 경로를 추가하면 해결됩니다.
+ *
+ * 예: .../images/9/98/Airfilter.png → .../images/9/98/Airfilter.png/revision/latest
+ */
+function convertFandomImageUrl(url: string): string {
+  if (!url.includes('static.wikia.nocookie.net')) {
+    return url;
+  }
+
+  // 이미 /revision/ 경로가 포함되어 있으면 그대로 반환
+  if (url.includes('/revision/')) {
+    return url;
+  }
+
+  // /images/ 경로의 파일에 /revision/latest 추가
+  if (/\/images\/[a-z0-9]\/[a-z0-9]{2}\//i.test(url)) {
+    return `${url}/revision/latest`;
+  }
+
   return url;
 }
 
